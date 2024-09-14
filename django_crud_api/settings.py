@@ -2,21 +2,19 @@ from pathlib import Path
 import os
 import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", default="your secret key")
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = os.environ.get("SECRET_KEY", "tu-clave-secreta")
+
 DEBUG = "RENDER" not in os.environ
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS += ["tasks-react-mocha.vercel.app"]
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -62,26 +60,29 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "django_crud_api.wsgi.application"
 
-# Database
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgresql://postgres:postgres@localhost:5432/mysite", conn_max_age=600
+        default=os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/mysite"),
+        conn_max_age=600,
+        ssl_require=not DEBUG
     )
 }
 
-# CORS configuration
 CORS_ALLOWED_ORIGINS = os.environ.get(
-    "CORS_ALLOWED_ORIGINS", "https://tasks-react-mocha.vercel.app/tasks"
+    "CORS_ALLOWED_ORIGINS", "https://tasks-react-mocha.vercel.app"
 ).split(",")
 
-# REST Framework configuration
-REST_FRAMEWORK = {"DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema"}
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS", "https://tasks-react-mocha.vercel.app"
+).split(",")
 
-# Static files (CSS, JavaScript, Images)
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema"
+}
+
 STATIC_URL = "static/"
 if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
